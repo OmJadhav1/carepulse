@@ -19,6 +19,8 @@ import { Select, SelectContent, SelectTrigger, SelectValue } from "./ui/select";
 import ReactDatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Checkbox } from "./ui/checkbox";
+import { getDay } from 'date-fns';
+
 interface CustomProps {
   control: Control<any>;
   name: string;
@@ -28,6 +30,7 @@ interface CustomProps {
   iconSrc?: string;
   iconAlt?: string;
   disabled?: boolean;
+  // minDate?: string;
   dateFormat?: string;
   showTimeSelect?: boolean;
   children?: React.ReactNode;
@@ -36,6 +39,23 @@ interface CustomProps {
 }
 
 const RenderInput = ({ field, props }: { field: any; props: CustomProps }) => {
+  const isWeekday = (date: Date) => {
+    const day = getDay(date);
+    return day !== 0; // Disable Sundays (0) and Saturdays (6)
+  };
+
+  const filterPassedTime = (time: Date) => {
+    const currentDate = new Date();
+    const selectedDate = new Date(time);
+
+    // Ensure the selected time is within the 9am to 9pm range
+    const selectedHour = selectedDate.getHours();
+    return (
+      selectedDate.getTime() > currentDate.getTime() &&
+      selectedHour >= 9 && selectedHour < 21
+    );
+  };
+
   switch (props.fieldType) {
     case FormFieldType.INPUT:
       return (
@@ -116,6 +136,9 @@ const RenderInput = ({ field, props }: { field: any; props: CustomProps }) => {
               onChange={(date) => field.onChange(date)}
               timeInputLabel="Time:"
               dateFormat={props.dateFormat ?? "MM/dd/yyyy"}
+              minDate={new Date()} // Disable past dates
+              filterTime={filterPassedTime}
+              filterDate={isWeekday}
               wrapperClassName="date-picker"
               closeOnScroll={true}
             />
