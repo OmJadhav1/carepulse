@@ -4,13 +4,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Form, FormControl } from "@/components/ui/form";
-import CustomFormField from "../CustomFormField";
+import CustomFormField, { FormFieldType } from "../CustomFormField";
 import SubmitButton from "../SubmitButton";
 import { useState } from "react";
-import { PatientFormValidation, UserFormValidation } from "@/lib/validation";
+import { PatientFormValidation} from "@/lib/validation";
 import { useRouter } from "next/navigation";
 import { registerPatient } from "@/lib/actions/patient.actions";
-import { FormFieldType } from "./PatientForm";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { Doctors, GenderOptions, PatientFormDefaultValues } from "@/constants";
 import { Label } from "../ui/label";
@@ -54,7 +53,7 @@ const RegisterForm = ({ user }: { user: User }) => {
         disclosureConsent: values.disclosureConsent,
         treatmentConsent: values.treatmentConsent,
       };
-      //@ts-ignore
+
       const newPatient = await registerPatient(patient);
 
       if (newPatient) {

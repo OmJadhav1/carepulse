@@ -22,11 +22,11 @@ declare interface RegisterUserParams extends CreateUserParams {
   birthDate: Date;
   gender: Gender;
   address: string;
-  emergencyContactName: string;
+  emergencyContactName?: string;
   emergencyContactNumber: string;
   primaryPhysician: string;
-  insuranceProvider: string;
-  insurancePolicyNumber: string;
+  insuranceProvider?: string;
+  insurancePolicyNumber?: string;
   pastMedicalHistory: string | undefined;
   privacyConsent: boolean;
   disclosureConsent: boolean;

@@ -3,7 +3,6 @@ import { E164Number } from "libphonenumber-js/core";
 import Image from "next/image";
 import {
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -12,7 +11,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Control } from "react-hook-form";
-import { FormFieldType } from "./forms/PatientForm";
 import "react-phone-number-input/style.css";
 import PhoneInput from "react-phone-number-input";
 import { Select, SelectContent, SelectTrigger, SelectValue } from "./ui/select";
@@ -30,12 +28,22 @@ interface CustomProps {
   iconSrc?: string;
   iconAlt?: string;
   disabled?: boolean;
-  // minDate?: string;
+  minDate?: Date ;
   dateFormat?: string;
   showTimeSelect?: boolean;
   children?: React.ReactNode;
   renderSkeleton?: (field: any) => React.ReactNode;
   fieldType: FormFieldType;
+}
+
+export enum FormFieldType {
+  INPUT = "input",
+  TEXTAREA = "textarea",
+  PHONE_INPUT = "phoneInput",
+  CHECKBOX = "checkbox",
+  DATE_PICKER = "datePicker",
+  SELECT = "select",
+  SKELETON = "skeleton",
 }
 
 const RenderInput = ({ field, props }: { field: any; props: CustomProps }) => {
@@ -136,7 +144,7 @@ const RenderInput = ({ field, props }: { field: any; props: CustomProps }) => {
               onChange={(date) => field.onChange(date)}
               timeInputLabel="Time:"
               dateFormat={props.dateFormat ?? "MM/dd/yyyy"}
-              minDate={new Date()} // Disable past dates
+              minDate={props.minDate} // Disable past dates
               filterTime={filterPassedTime}
               filterDate={isWeekday}
               wrapperClassName="date-picker"

@@ -1,47 +1,55 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { Dispatch, SetStateAction, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Form } from "@/components/ui/form";
-import CustomFormField from "../CustomFormField";
-import SubmitButton from "../SubmitButton";
-import { useState } from "react";
-import { getAppointmentSchema } from "@/lib/validation";
-import { useRouter } from "next/navigation";
-import { createUser } from "@/lib/actions/patient.actions";
-import { FormFieldType } from "./PatientForm";
-import Image from "next/image";
-import { Doctors } from "@/constants";
-import { SelectItem } from "../ui/select";
-import { createAppointment } from "@/lib/actions/appointment.actions";
 
-const AppointmentForm = ({
+import { SelectItem } from "@/components/ui/select";
+import { Doctors } from "@/constants";
+import {
+  createAppointment,
+  updateAppointment,
+} from "@/lib/actions/appointment.actions";
+import { getAppointmentSchema } from "@/lib/validation";
+import { Appointment } from "@/types/appwrite.types";
+
+import "react-datepicker/dist/react-datepicker.css";
+
+import SubmitButton from "../SubmitButton";
+import { Form } from "../ui/form";
+import CustomFormField, { FormFieldType } from "../CustomFormField";
+
+export const AppointmentForm = ({
   userId,
   patientId,
   type = "create",
-}: //   appointment,
-//   setOpen,
-{
+  appointment,
+  setOpen,
+}: {
   userId: string;
   patientId: string;
   type: "create" | "schedule" | "cancel";
-  //   appointment?: Appointment;
-  //   setOpen?: Dispatch<SetStateAction<boolean>>;
+  appointment?: Appointment;
+  setOpen?: Dispatch<SetStateAction<boolean>>;
 }) => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
   const AppointmentFormValidation = getAppointmentSchema(type);
-  // 1. Define your form.
+
   const form = useForm<z.infer<typeof AppointmentFormValidation>>({
     resolver: zodResolver(AppointmentFormValidation),
     defaultValues: {
-      primaryPhysician:  "",
-      schedule:new Date(Date.now()),
-      reason:  "",
-      note: "",
-      cancellationReason:  "",
+      primaryPhysician: appointment ? appointment?.primaryPhysician : "",
+      schedule: appointment
+        ? new Date(appointment?.schedule!)
+        : new Date(Date.now()),
+      reason: appointment ? appointment.reason : "",
+      note: appointment?.note || "",
+      cancellationReason: appointment?.cancellationReason || "",
     },
   });
 
@@ -81,6 +89,25 @@ const AppointmentForm = ({
           router.push(
             `/patients/${userId}/new-appointment/success?appointmentId=${newAppointment.$id}`
           );
+        }
+      } else {
+        const appointmentToUpdate = {
+          userId,
+          appointmentId: appointment?.$id!,
+          appointment: {
+            primaryPhysician: values.primaryPhysician,
+            schedule: new Date(values.schedule),
+            status: status as Status,
+            cancellationReason: values.cancellationReason,
+          },
+          type,
+        };
+
+        const updatedAppointment = await updateAppointment(appointmentToUpdate);
+
+        if (updatedAppointment) {
+          setOpen && setOpen(false);
+          form.reset();
         }
       }
     } catch (error) {
@@ -122,7 +149,7 @@ const AppointmentForm = ({
               label="Doctor"
               placeholder="Select a doctor"
             >
-              {Doctors.slice(1).map((doctor, i) => (
+              {Doctors.map((doctor, i) => (
                 <SelectItem key={doctor.name + i} value={doctor.name}>
                   <div className="flex cursor-pointer items-center gap-2">
                     <Image
@@ -139,7 +166,6 @@ const AppointmentForm = ({
             </CustomFormField>
 
             <CustomFormField
-              //   selected={startDate}
               fieldType={FormFieldType.DATE_PICKER}
               control={form.control}
               name="schedule"
@@ -196,5 +222,3 @@ const AppointmentForm = ({
     </Form>
   );
 };
-
-export default AppointmentForm;
